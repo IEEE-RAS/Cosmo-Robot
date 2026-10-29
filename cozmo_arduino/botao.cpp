@@ -26,7 +26,7 @@ bool botao_esperar(unsigned ms)
     if (nivel != nivel_anterior)
     {
       unsigned long agora = millis();
-      /* mesma regra do Linux: ignora evento a menos de 30 ms do anterior */
+      /*  ignora evento a menos de 30 ms do anterior */
       bool estavel = (agora - ultimo_evento_ms) > DEBOUNCE_MS;
 
       ultimo_evento_ms = agora;
