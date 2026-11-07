@@ -153,8 +153,6 @@ Cosmo-Robot/
 └── README.md
 ```
 
-> O pacote distribuído anteriormente tinha `src/main.c`; se sua branch mantiver esse layout, o `CMakeLists.txt` deve apontar para `src/main.c`. Na compilação local mostrada durante o desenvolvimento, o arquivo principal estava em `main.c`, na raiz.
-
 ## Compilação e gravação do firmware
 
 **Pré-requisitos:** Pico SDK, toolchain ARM (`arm-none-eabi-gcc`), CMake e Ninja configurados.
