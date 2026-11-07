@@ -1,0 +1,10 @@
+# Compilação Pico SDK
+/build/
+
+# Ambiente Python
+/.venv/
+__pycache__/
+*.pyc
+
+# Modelos de reconhecimento de voz
+/models/
