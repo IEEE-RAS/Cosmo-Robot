@@ -17,8 +17,6 @@ A implementação começou como um **teste de bancada no Arduino Uno**, para val
 | [Experimento Pico anterior](https://github.com/StheffannyNAlves/Cosmo-Robot/tree/pico) | Pico SDK (configuração remota antiga para `pico_w`) | Experimento de olhos e SSD1306; não corresponde ao firmware mais recente descrito abaixo. |
 | **Protótipo RP2040 + voz** | Raspberry Pi Pico (RP2040) + Ubuntu | Adicionar 12 expressões, captura I²S via PIO/DMA, protocolo USB e comandos por texto/voz. |
 
-> **Nota sobre as branches:** a versão nova foi desenvolvida e testada localmente. Até que seus commits sejam publicados, o conteúdo exibido nas branches remotas pode ser anterior ao documentado aqui. O README da branch Arduino continua disponível como registro histórico dos primeiros testes.
-
 ### Decisões reaproveitadas da versão Arduino
 
 A primeira implementação separou o **desenho dos olhos** (`eyes.c`) dos **drivers específicos de plataforma**. No Arduino, o desenho era C e os drivers eram C++ porque utilizavam `Wire`, `Serial` e `millis()`. Na implementação Linux, a mesma ideia passou a usar APIs do sistema; no RP2040, usa o **Pico SDK**.
