@@ -2,6 +2,10 @@
 
 **Robô de mesa inspirado no Cozmo (Anki), desenvolvido no contexto do IEEE RAS da Universidade Estadual de Feira de Santana (UEFS).**
 
+## Demonstração do Cosmo
+
+[Assista à demonstração das três formas de interação](docs/demonstracao/Cosmo-Robot_Demonstracao.mp4)
+
 O Cosmo é um projeto experimental de robótica e sistemas embarcados: uma plataforma para estudar **interfaces com periféricos, animações, programação em C e interação por voz**, construindo e testando cada parte antes de integrá-la ao corpo do robô.
 
 A implementação começou como um **teste de bancada no Arduino Uno**, para validar a lógica dos olhos e o display SSD1306 enquanto a Raspberry Pi Zero W não estava disponível. Em paralelo, foi desenvolvida uma implementação para Linux, com acesso direto aos periféricos do sistema. O protótipo mais recente utiliza **Raspberry Pi Pico (RP2040)**, **INMP441** e um aplicativo Python/Vosk executado no notebook Ubuntu.
@@ -146,7 +150,7 @@ Cosmo-Robot/
 │   ├── requirements.txt
 │   └── tests/
 │       └── test_voice.py
-├── third_party/                # Licenças de código de terceiros
+├── creditos/                # Licenças de código de terceiros
 ├── .vscode/                    # Configuração de desenvolvimento
 └── README.md
 ```
