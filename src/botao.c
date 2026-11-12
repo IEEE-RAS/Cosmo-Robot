@@ -1,4 +1,3 @@
-/* Leitura NAO BLOQUEANTE do botao, pull-up e debounce de 30 ms. */
 #include <stdint.h>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
