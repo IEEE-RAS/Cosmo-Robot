@@ -1,0 +1,116 @@
+Cosmo-Robot via Cosmo-Robot …
+➜ python host/cosmo_voice.py \
+  --port /dev/ttyACM0 \
+  --model models/vosk-model-small-pt-0.3 \
+  --verbose
+[Vosk] Modelo carregado: models/vosk-model-small-pt-0.3
+[USB] Conectado a /dev/ttyACM0 | 16000 Hz PCM16 mono
+[USB] A serial transmite AUDIO BINARIO; nao abra minicom ao mesmo tempo.
+[Voz] Diga: 'feliz', 'bravo', 'triste', 'surpreso', 'confuso' ...
+[USB] 100 pacotes validos, CRC incorreto=0
+[USB] 200 pacotes validos, CRC incorreto=0
+[USB] 300 pacotes validos, CRC incorreto=0
+[Vosk] 'ele' -> nenhum comando
+[USB] 400 pacotes validos, CRC incorreto=0
+[USB] 500 pacotes validos, CRC incorreto=0
+[USB] 600 pacotes validos, CRC incorreto=0
+[USB] 700 pacotes validos, CRC incorreto=0
+[USB] 800 pacotes validos, CRC incorreto=0
+[USB] 900 pacotes validos, CRC incorreto=0
+[USB] 1000 pacotes validos, CRC incorreto=0
+[USB] 1100 pacotes validos, CRC incorreto=0
+[USB] 1200 pacotes validos, CRC incorreto=0
+[Vosk] 'feliz' -> E:FELIZ
+[USB] 1300 pacotes validos, CRC incorreto=0
+[USB] 1400 pacotes validos, CRC incorreto=0
+[Vosk] 'breve' -> nenhum comando
+[USB] 1500 pacotes validos, CRC incorreto=0
+[Vosk] 'bravo' -> E:BRAVO
+[USB] 1600 pacotes validos, CRC incorreto=0
+[Vosk] 'triste' -> E:TRISTE
+[USB] 1700 pacotes validos, CRC incorreto=0
+[Vosk] 'pisca' -> A:PISCAR
+[USB] 1800 pacotes validos, CRC incorreto=0
+[USB] 1900 pacotes validos, CRC incorreto=0
+[Vosk] 'olha para a direita' -> A:DIREITA
+[USB] 2000 pacotes validos, CRC incorreto=0
+[USB] 2100 pacotes validos, CRC incorreto=0
+[USB] 2200 pacotes validos, CRC incorreto=0
+[USB] 2300 pacotes validos, CRC incorreto=0
+[Vosk] 'surpreso' -> E:SURPRESO
+[USB] 2400 pacotes validos, CRC incorreto=0
+[USB] 2500 pacotes validos, CRC incorreto=0
+[USB] 2600 pacotes validos, CRC incorreto=0
+[USB] 2700 pacotes validos, CRC incorreto=0
+[USB] 2800 pacotes validos, CRC incorreto=0
+[USB] 2900 pacotes validos, CRC incorreto=0
+[USB] 3000 pacotes validos, CRC incorreto=0
+[USB] 3100 pacotes validos, CRC incorreto=0
+[Vosk] 'triste' -> E:TRISTE
+[USB] 3200 pacotes validos, CRC incorreto=0
+[Vosk] 'bravo' -> E:BRAVO
+[USB] 3300 pacotes validos, CRC incorreto=0
+[Vosk] 'feliz' -> E:FELIZ
+[USB] 3400 pacotes validos, CRC incorreto=0
+[USB] 3500 pacotes validos, CRC incorreto=0
+[USB] 3600 pacotes validos, CRC incorreto=0
+[USB] 3700 pacotes validos, CRC incorreto=0
+[Vosk] 'pisca' -> A:PISCAR
+[USB] 3800 pacotes validos, CRC incorreto=0
+[Vosk] 'olha para a direita' -> A:DIREITA
+[USB] 3900 pacotes validos, CRC incorreto=0
+[USB] 4000 pacotes validos, CRC incorreto=0
+[USB] 4100 pacotes validos, CRC incorreto=0
+[USB] 4200 pacotes validos, CRC incorreto=0
+[USB] 4300 pacotes validos, CRC incorreto=0
+[USB] 4400 pacotes validos, CRC incorreto=0
+[USB] 4500 pacotes validos, CRC incorreto=0
+[USB] 4600 pacotes validos, CRC incorreto=0
+[USB] 4700 pacotes validos, CRC incorreto=0
+[USB] 4800 pacotes validos, CRC incorreto=0
+[USB] 4900 pacotes validos, CRC incorreto=0
+[USB] 5000 pacotes validos, CRC incorreto=0
+[USB] 5100 pacotes validos, CRC incorreto=0
+[USB] 5200 pacotes validos, CRC incorreto=0
+[USB] 5300 pacotes validos, CRC incorreto=0
+[USB] 5400 pacotes validos, CRC incorreto=0
+[USB] 5500 pacotes validos, CRC incorreto=0
+[USB] 5600 pacotes validos, CRC incorreto=0
+[USB] 5700 pacotes validos, CRC incorreto=0
+[USB] 5800 pacotes validos, CRC incorreto=0
+[USB] 5900 pacotes validos, CRC incorreto=0
+[USB] 6000 pacotes validos, CRC incorreto=0
+[USB] 6100 pacotes validos, CRC incorreto=0
+[USB] 6200 pacotes validos, CRC incorreto=0
+[USB] 6300 pacotes validos, CRC incorreto=0
+[USB] 6400 pacotes validos, CRC incorreto=0
+[USB] 6500 pacotes validos, CRC incorreto=0
+[USB] 6600 pacotes validos, CRC incorreto=0
+[USB] 6700 pacotes validos, CRC incorreto=0
+[USB] 6800 pacotes validos, CRC incorreto=0
+[USB] 6900 pacotes validos, CRC incorreto=0
+[USB] 7000 pacotes validos, CRC incorreto=0
+[USB] 7100 pacotes validos, CRC incorreto=0
+[USB] 7200 pacotes validos, CRC incorreto=0
+[USB] 7300 pacotes validos, CRC incorreto=0
+[USB] 7400 pacotes validos, CRC incorreto=0
+[USB] 7500 pacotes validos, CRC incorreto=0
+[USB] 7600 pacotes validos, CRC incorreto=0
+[USB] 7700 pacotes validos, CRC incorreto=0
+[USB] 7800 pacotes validos, CRC incorreto=0
+[USB] 7900 pacotes validos, CRC incorreto=0
+[USB] 8000 pacotes validos, CRC incorreto=0
+[USB] 8100 pacotes validos, CRC incorreto=0
+[USB] 8200 pacotes validos, CRC incorreto=0
+[USB] 8300 pacotes validos, CRC incorreto=0
+[USB] 8400 pacotes validos, CRC incorreto=0
+[USB] 8500 pacotes validos, CRC incorreto=0
+[USB] 8600 pacotes validos, CRC incorreto=0
+[USB] 8700 pacotes validos, CRC incorreto=0
+[USB] 8800 pacotes validos, CRC incorreto=0
+[USB] 8900 pacotes validos, CRC incorreto=0
+[USB] 9000 pacotes validos, CRC incorreto=0
+[USB] 9100 pacotes validos, CRC incorreto=0
+[USB] 9200 pacotes validos, CRC incorreto=0
+[USB] 9300 pacotes validos, CRC incorreto=0
+Erro serial: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
