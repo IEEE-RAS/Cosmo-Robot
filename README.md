@@ -6,11 +6,11 @@
 
 [Assista à demonstração das três formas de interação](docs/demonstracao/Cosmo-Robot_Demonstracao.mp4)
 
-O Cosmo é um projeto experimental de robótica e sistemas embarcados: uma plataforma para estudar **interfaces com periféricos, animações, programação em C e interação por voz**, construindo e testando cada parte antes de integrá-la ao corpo do robô.
+O Cosmo é um projeto experimental de robótica e sistemas embarcados: uma plataforma para estudar **interfaces com periféricos, animações, programação em C, interação por voz e percepção de proximidade**, construindo e testando cada parte antes de integrá-la ao corpo do robô.
 
-A implementação começou como um **teste de bancada no Arduino Uno**, para validar a lógica dos olhos e o display SSD1306 enquanto a Raspberry Pi Zero W não estava disponível. Em paralelo, foi desenvolvida uma implementação para Linux, com acesso direto aos periféricos do sistema. O protótipo mais recente utiliza **Raspberry Pi Pico (RP2040)**, **INMP441** e um aplicativo Python/Vosk executado no notebook Ubuntu.
+A implementação começou como um **teste de bancada no Arduino Uno**, para validar a lógica dos olhos e o display SSD1306 enquanto a Raspberry Pi Zero W não estava disponível. Em paralelo, foi desenvolvida uma implementação para Linux, com acesso direto aos periféricos do sistema. O protótipo mais recente utiliza **Raspberry Pi Pico (RP2040)**, **INMP441**, **HC-SR04** e um aplicativo Python/Vosk executado no notebook Ubuntu. As reações à proximidade funcionam localmente na Pico, sem notebook.
 
-> **Estado da versão RP2040:** display OLED, piscadas, alternância pelo botão e reações enviadas pela USB foram testados na placa. A captura I²S e o reconhecimento por fala fazem parte da implementação, mas ainda precisam de validação de confiabilidade em bancada. A Raspberry Pi Zero W permanece como plataforma prevista para a evolução do projeto.
+> **Estado da versão RP2040 (12/11/2026):** display OLED, piscadas, botão, comandos USB e reações automáticas ao HC-SR04 foram testados em bancada. O reconhecimento de voz com Vosk também foi demonstrado com notebook, mas a confiabilidade e a latência ainda precisam ser aprimoradas. O sensor IR ainda não está integrado. A Raspberry Pi Zero W permanece como plataforma prevista.
 
 ## Evolução do projeto
 
@@ -19,7 +19,7 @@ A implementação começou como um **teste de bancada no Arduino Uno**, para val
 | [Protótipo Arduino](https://github.com/StheffannyNAlves/Cosmo-Robot/tree/cozmo_arduino) | Arduino Uno | Validar olhos, piscadas, expressões e botão. Driver I²C com `Wire`; lógica de desenho em C puro. |
 | [Implementação Linux](https://github.com/StheffannyNAlves/Cosmo-Robot/tree/linux) | Raspberry Pi Zero W (planejada) | Explorar acesso a `/dev/i2c-1`, GPIO por interfaces do Linux e compilação nativa em C. |
 | [Experimento Pico anterior](https://github.com/StheffannyNAlves/Cosmo-Robot/tree/pico) | Pico SDK (configuração remota antiga para `pico_w`) | Experimento de olhos e SSD1306; não corresponde ao firmware mais recente descrito abaixo. |
-| **Protótipo RP2040 + voz** | Raspberry Pi Pico (RP2040) + Ubuntu | Adicionar 12 expressões, captura I²S via PIO/DMA, protocolo USB e comandos por texto/voz. |
+| **Protótipo RP2040 + voz + proximidade** | Raspberry Pi Pico (RP2040) + Ubuntu | 12 expressões, captura I²S via PIO/DMA, USB, comandos por texto/voz e percepção local por HC-SR04. |
 
 ### Decisões reaproveitadas da versão Arduino
 
@@ -38,6 +38,7 @@ Como referência histórica, a versão Arduino registrou **6.646 bytes de flash 
 - **Comunicação USB CDC bidirecional** entre a Pico e o notebook.
 - **Reconhecimento de comandos em português brasileiro**, offline após a instalação do modelo Vosk.
 - **Modo de simulação por texto** para testar comandos sem depender do reconhecimento de voz.
+- **HC-SR04:** leitura de distância via TRIG/ECHO, interrupções GPIO, verificação periódica do resultado e reações automáticas com confirmação de três amostras.
 
 ### Expressões e ações
 
@@ -60,6 +61,39 @@ Também estão disponíveis os comandos **`PISCAR`**, **`ESQUERDA`**, **`DIREITA
 
 O reconhecimento é baseado em **palavras-chave presentes na transcrição**. Ele não identifica emoções pelo tom de voz nem realiza uma conversa livre com o robô. A palavra “Cosmo” não é obrigatória por padrão.
 
+## Sensor de proximidade HC-SR04
+
+A RP2040 dispara o **TRIG** e mede a largura do pulso **ECHO** usando interrupções por borda, evitando que o laço principal aguarde ativamente o eco. O driver fica em `src/sensores/hc-sr04.c`, com interface em `include/hc_sr04.h`. As regras de comportamento ficam em `main.c`.
+
+| Distância válida | Expressão |
+| --- | --- |
+| Abaixo de 8 cm | `SURPRESO` |
+| De 8 cm até menos de 20 cm | `CURIOSO` |
+| A partir de 20 cm | `NORMAL` |
+
+- Uma faixa precisa de **três leituras consecutivas** para ser confirmada.
+- Comandos de expressão por botão/USB têm prioridade temporária de aproximadamente 4,5 segundos; comandos de ação USB usam 1,2 segundo.
+- Os limiares são iniciais e ainda não foram calibrados para precisão de distância.
+- **Limitação importante:** a implementação atual transforma leitura inválida/ausência de eco em `PROX_LIVRE` na camada de comportamento. Isso **não prova** que o caminho esteja livre; a lógica deve ser corrigida antes de qualquer uso de segurança ou anticolisão.
+- O HC-SR04 mede apenas na direção em que aponta; não é sensor de borda/queda.
+- O HC-SR04 e as expressões funcionam sem notebook. **Vosk continua dependendo do computador.**
+
+### Conexão elétrica do HC-SR04 convencional
+
+| Sinal HC-SR04 | Raspberry Pi Pico | Pino físico Pico |
+| --- | --- | --- |
+| VCC | VBUS, 5 V quando alimentada por USB | 40 |
+| GND | GND comum | GND disponível |
+| TRIG | GP6 | 9 |
+| ECHO | GP7, **obrigatoriamente com adaptação para 3,3 V** | 10 |
+
+**Proteção do ECHO:** o ECHO de módulos HC-SR04 convencionais pode chegar a 5 V, mas os GPIOs da RP2040 não aceitam 5 V. Use conversor lógico adequado ou divisor resistivo com um resistor entre ECHO e GP7 e outro entre GP7 e GND (por exemplo, 2,2 kΩ em cima e 3,3 kΩ embaixo geram cerca de 3 V). **Dois resistores apenas em paralelo NÃO formam divisor de tensão.** Confira com multímetro antes de conectar o GPIO.
+
+### Ensaios realizados e pendentes
+
+- **Confirmado em bancada:** medição de distância e mudança automática dos olhos conforme aproximação/afastamento.
+- **Pendente:** calibração das faixas, testes de timeout, tratamento explícito para leitura desconhecida, estabilidade prolongada e ensaio completo simultâneo com voz e sensor.
+
 ## Arquitetura
 
 ```text
@@ -73,7 +107,7 @@ O reconhecimento é baseado em **palavras-chave presentes na transcrição**. El
               ▼
     ┌──────────────────────┐
     │ Raspberry Pi Pico    │◄── Botão (GP2)
-    │ RP2040 · C/Pico SDK  │
+    │ RP2040 · C/Pico SDK  │◄── HC-SR04 (GP6/GP7)
     │ PIO + DMA            │
     └──────┬────────┬──────┘
            │        ▲
@@ -97,6 +131,7 @@ O RP2040 continua responsável pelos periféricos e pelas animações. O noteboo
 - Raspberry Pi Pico com **RP2040**;
 - display **SSD1306 I²C**, 128 × 64;
 - microfone digital **INMP441**;
+- sensor ultrassônico **HC-SR04**;
 - botão (*push button*);
 - protoboard, jumpers e cabo USB **de dados**;
 - notebook com Ubuntu para executar o reconhecedor Vosk.
@@ -117,10 +152,14 @@ O RP2040 continua responsável pelos periféricos e pelas animações. O noteboo
 | INMP441 | L/R | GND (canal esquerdo) | 13² |
 | Botão | Terminal 1 | GP2 | 4 |
 | Botão | Terminal 2 | GND | 3 |
+| HC-SR04 | TRIG | GP6 | 9 |
+| HC-SR04 | ECHO | GP7 **via conversão de nível** | 10 |
+| HC-SR04 | VCC | VBUS (5 V via USB) | 40 |
+| HC-SR04 | GND | GND comum | GND disponível |
 
 ¹ Verifique se **seu módulo SSD1306 aceita 3,3 V**. ² L/R compartilha a referência de terra; não precisa ocupar sozinho um segundo pino físico da Pico.
 
-**Atenção:** o INMP441 opera em 3,3 V. Não conecte 5 V ao microfone nem aos GPIOs do RP2040. Use GND comum entre os componentes. O botão utiliza o pull-up interno.
+**Atenção:** o INMP441 opera em 3,3 V; não conecte 5 V ao microfone nem aos GPIOs da RP2040. O ECHO do HC-SR04 exige adaptação de nível, conforme seção acima. Use GND comum. O botão utiliza o pull-up interno.
 
 ## Tecnologias
 
@@ -129,6 +168,7 @@ O RP2040 continua responsável pelos periféricos e pelas animações. O noteboo
 | Firmware | C11, Pico SDK, CMake, Ninja |
 | Display | SSD1306, I²C |
 | Microfone | INMP441, I²S, PIO, DMA |
+| Proximidade | HC-SR04, GPIO e interrupções |
 | Comunicação | USB CDC, protocolo binário de áudio e comandos ASCII |
 | Reconhecimento | Python 3, Vosk, pyserial |
 | Testes | `unittest` para o aplicativo Python |
@@ -138,20 +178,23 @@ O RP2040 continua responsável pelos periféricos e pelas animações. O noteboo
 ```text
 Cosmo-Robot/
 ├── CMakeLists.txt
-├── main.c                     # Integração do firmware (layout da branch atual)
+├── main.c                   # Integração e comportamento
+├── include/                 # Cabeçalhos: botao, eyes, ssd1306, mic_i2s, hc_sr04
 ├── src/
-│   ├── botao.c / botao.h       # GPIO e debounce
-│   ├── eyes.c / eyes.h         # Expressões e desenho dos olhos
-│   ├── ssd1306.c / ssd1306.h   # Driver OLED I²C
-│   ├── mic_i2s.c / mic_i2s.h   # Captura e conversão de áudio
-│   └── mic_i2s.pio             # Programa PIO de I²S
+│   ├── botao.c
+│   ├── eyes.c
+│   ├── ssd1306.c
+│   ├── mic_i2s.c
+│   ├── mic_i2s.pio
+│   └── sensores/
+│       └── hc-sr04.c       # Driver ultrassônico
 ├── host/
-│   ├── cosmo_voice.py          # Serial, Vosk e comandos
+│   ├── cosmo_voice.py
 │   ├── requirements.txt
 │   └── tests/
 │       └── test_voice.py
-├── creditos/                # Licenças de código de terceiros
-├── .vscode/                    # Configuração de desenvolvimento
+├── docs/
+├── creditos/
 └── README.md
 ```
 
@@ -241,7 +284,7 @@ Eles verificam a associação de palavras a comandos e aspectos da leitura dos p
 
 - **Pico → computador:** áudio mono PCM16LE, 16 kHz, empacotado com cabeçalho, sequência e CRC16-CCITT.
 - **Computador → Pico:** comandos ASCII terminados por `\n`, como `E:FELIZ\n` e `A:PISCAR\n`.
-- **Sem notebook:** o botão e as animações locais continuam disponíveis.
+- **Sem notebook:** botão, animações locais e reações ao HC-SR04 continuam disponíveis.
 
 ## Problemas comuns
 
@@ -253,14 +296,16 @@ Eles verificam a associação de palavras a comandos e aspectos da leitura dos p
 | `/dev/ttyACM0` não existe | Confira o cabo de dados, a enumeração USB e o nome real da porta. |
 | Permissão negada na serial | Verifique se o usuário pertence ao grupo `dialout` e reinicie a sessão após ajustar permissões. |
 | Reação por texto funciona, mas voz não | Inspecione `--verbose`; investigue captação I²S, nível de áudio, modelo e transcrição antes de alterar o desenho dos olhos. |
+| HC-SR04 não reage | Confira alimentação, TRIG GP6, ECHO GP7 com conversão de nível, GND comum e orientação. |
+| HC-SR04 retorna leitura inválida | Confira reflexões, conexões e sinal ECHO. **Não** interprete falha como ausência segura de obstáculo. |
 
 ## Estado do desenvolvimento e próximos passos
 
-**Confirmado nos testes do protótipo:** display OLED funcionando, olhos piscando, botão alternando expressões e correção visual das expressões `FELIZ`, `BRAVO` e `TRISTE`.
+**Confirmado nos testes do protótipo:** display OLED, piscadas, botão, correção visual das expressões `FELIZ`, `BRAVO` e `TRISTE`, medição de distância com HC-SR04 e reações automáticas do display. Os testes de voz anteriores reportaram 9.300 pacotes válidos sem erro de CRC e comandos reconhecidos no Vosk.
 
-**A validar ou aprimorar:** robustez do áudio I²S, latência do reconhecimento, desempenho sob ruído, integridade dos pacotes durante a atualização do OLED e funcionamento autônomo sem notebook.
+**A validar ou aprimorar:** robustez do áudio I²S, latência do reconhecimento, desempenho sob ruído, integridade dos pacotes durante a atualização do OLED, calibração e tratamento de falhas do HC-SR04, estabilidade conjunta de periféricos e reconhecimento de voz autônomo sem notebook.
 
-A evolução planejada inclui integrar os componentes ao corpo do Cosmo, reduzir a dependência do notebook e estudar uma solução de reconhecimento compatível com a plataforma embarcada final, inicialmente prevista como **Raspberry Pi Zero W**. Não há reprodução de voz ou síntese de fala implementada nesta versão.
+A evolução planejada inclui futuramente testar sensores IR (ainda não integrados), integrar os componentes ao corpo do Cosmo, reduzir a dependência do notebook e estudar uma solução de reconhecimento compatível com a plataforma embarcada final, inicialmente prevista como **Raspberry Pi Zero W**. Não há reprodução de voz ou síntese de fala implementada nesta versão.
 
 ## Registro de testes e histórico
 
@@ -277,6 +322,7 @@ O Git mantém acessíveis as implementações anteriores mesmo quando seus arqui
 - [Raspberry Pi Pico SDK](https://www.raspberrypi.com/documentation/pico-sdk/index.html)
 - [RP2040 — documentação e datasheet](https://www.raspberrypi.com/documentation/microcontrollers/silicon.html)
 - [INMP441 — datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/INMP441.pdf)
+- [HC-SR04 — datasheet](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf)
 - [Vosk — modelos de reconhecimento](https://alphacephei.com/vosk/models)
 - [moefh/pico-i2s-mic](https://github.com/moefh/pico-i2s-mic) — referência para o programa PIO de captura I²S. Consulte a licença correspondente em `third_party/`.
 
