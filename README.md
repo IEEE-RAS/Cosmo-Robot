@@ -324,7 +324,7 @@ O Git mantém acessíveis as implementações anteriores mesmo quando seus arqui
 - [INMP441 — datasheet](https://invensense.tdk.com/wp-content/uploads/2015/02/INMP441.pdf)
 - [HC-SR04 — datasheet](https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf)
 - [Vosk — modelos de reconhecimento](https://alphacephei.com/vosk/models)
-- [moefh/pico-i2s-mic](https://github.com/moefh/pico-i2s-mic) — referência para o programa PIO de captura I²S. Consulte a licença correspondente em `third_party/`.
+- [moefh/pico-i2s-mic](https://github.com/moefh/pico-i2s-mic) — referência para o programa PIO de captura I²S. Consulte a licença correspondente em `creditos/`.
 
 **Desenvolvimento:** [Stheffanny N. Alves](https://github.com/StheffannyNAlves).
 
