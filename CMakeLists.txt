@@ -23,11 +23,16 @@ pico_sdk_init()
 
 add_executable(cosmo
     main.c
+
     src/eyes.c
     src/ssd1306.c
     src/botao.c
     src/mic_i2s.c
+
     src/sensores/hc-sr04.c
+    src/sensores/ir_obstaculos.c
+
+    src/percepcao.c
 )
 
 target_include_directories(cosmo PRIVATE

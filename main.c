@@ -11,11 +11,16 @@
 #include "ssd1306.h"
 #include "botao.h"
 #include "mic_i2s.h"
+
 #include "hc_sr04.h"
+#include "ir_obstaculo.h"
+#include "percepcao.h"
 
 #define BTN_GPIO 2u
+
 #define HC_TRIG_GPIO 6u
 #define HC_ECHO_GPIO 7u
+#define IR_GPIO 8u
 
 #define MIC_SCK_GPIO 10u
 #define MIC_WS_GPIO 11u
@@ -27,11 +32,6 @@
 #define DETECTAR_SOM_LIMIAR 700u
 #define ATENCAO_MS 400u
 #define REACAO_MS 4500u
-
-// Sensor ultrassonico
-#define PROX_PERTO_CM 20.0f
-#define PROX_MUITO_PERTO_CM 8.0f
-#define PROX_CONFIRMACOES 3u
 
 static int pos_x = POS_X_BASE;
 static int pos_y = POS_Y_BASE;
@@ -66,7 +66,6 @@ static int start_x, start_y;
 static int goal_x, goal_y;
 static int move_step;
 
-
 void olhos_atraso_ms(unsigned ms) {
     sleep_ms(ms);
 }
@@ -79,6 +78,7 @@ static bool deadline(uint32_t now, uint32_t when) {
     return (int32_t)(now - when) >= 0;
 }
 
+
 static void draw(void) {
     desenhar_olhos(
         pos_x,
@@ -87,7 +87,6 @@ static void draw(void) {
         attention ? ATENTO : emotion
     );
 }
-
 
 static void start_blink(uint32_t now) {
     animation = BLINK_CLOSING;
@@ -177,7 +176,6 @@ static void animate(uint32_t now) {
     }
 }
 
-
 static void apply_emotion(emocao_t state, uint32_t now) {
     emotion = state;
 
@@ -197,56 +195,26 @@ static void apply_emotion(emocao_t state, uint32_t now) {
 }
 
 
-typedef enum {
-    PROX_LIVRE,
-    PROX_PERTO,
-    PROX_MUITO_PERTO
-} zona_prox_t;
-
-static void atualizar_proximidade(uint32_t now) {
-    static zona_prox_t candidata = PROX_LIVRE;
-    static unsigned repeticoes;
-
-    float cm = 0.0f;
-
-    hc_sr04_result_t resultado = hc_sr04_poll(&cm);
-
-    if (resultado == HC_SR04_SEM_AMOSTRA)
-        return;
-
-    zona_prox_t leitura = PROX_LIVRE;
-
-    if (resultado == HC_SR04_VALIDO) {
-        if (cm < PROX_MUITO_PERTO_CM) {
-            leitura = PROX_MUITO_PERTO;
-
-        } else if (cm < PROX_PERTO_CM) {
-            leitura = PROX_PERTO;
-        }
-    }
-
-    if (leitura != candidata) {
-        candidata = leitura;
-        repeticoes = 1;
-
-    } else if (repeticoes < PROX_CONFIRMACOES) {
-        ++repeticoes;
-    }
-
-    if (repeticoes < PROX_CONFIRMACOES ||
-        reaction_active) {
-        return;
-    }
+static void atualizar_expressao_ambiente(uint32_t now) {
+    const percepcao_estado_t *p = percepcao_obter();
 
     emocao_t desejada = NORMAL;
 
-    if (candidata == PROX_PERTO)
-        desejada = CURIOSO;
+    // O infravermelho tem prioridade visual.
+    if (p->ir_detectado) {
+        desejada = ASSUSTADO;
 
-    if (candidata == PROX_MUITO_PERTO)
-        desejada = SURPRESO;
+    } else if (p->ultrassom_valido) {
+        if (p->zona == PROX_MUITO_PERTO) {
+            desejada = SURPRESO;
 
-    if (emotion == desejada)
+        } else if (p->zona == PROX_PERTO) {
+            desejada = CURIOSO;
+        }
+    }
+
+    // Comandos manuais preservam sua prioridade.
+    if (reaction_active || emotion == desejada)
         return;
 
     emotion = desejada;
@@ -261,6 +229,9 @@ static void atualizar_proximidade(uint32_t now) {
     draw();
 }
 
+// -------------------------------------------------
+// COMANDOS RECEBIDOS POR USB
+// -------------------------------------------------
 
 static void process_command(const char *cmd) {
     static const struct {
@@ -437,6 +408,8 @@ int main(void) {
     botao_init(BTN_GPIO);
 
     hc_sr04_init(HC_TRIG_GPIO, HC_ECHO_GPIO);
+    ir_obstaculo_init(IR_GPIO);
+    percepcao_init();
 
     draw();
 
@@ -450,7 +423,6 @@ int main(void) {
         mic_i2s_start();
 
     next_action = now_ms() + 1400u;
-
 
     while (true) {
         uint32_t now = now_ms();
@@ -500,7 +472,11 @@ int main(void) {
             reaction_active = false;
         }
 
-        atualizar_proximidade(now_ms());
+        // Sensoriamento independente da expressao.
+        percepcao_atualizar(now_ms());
+
+        // Escolhe a reacao visual.
+        atualizar_expressao_ambiente(now_ms());
 
         animate(now_ms());
 
