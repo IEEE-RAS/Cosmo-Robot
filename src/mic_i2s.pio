@@ -1,0 +1,17 @@
+; Adaptado de moefh/pico-i2s-mic (MIT, Ricardo Massaro, 2022).
+; O SCK eh pino base de sideset; WS eh o proximo GPIO.
+; Leitura de 32 bits por canal, total de 64 ciclos SCK por frame.
+.program mic_i2s
+.side_set 2
+
+    set x, 30             side 0b00
+left_bits:
+    in  pins, 1           side 0b01
+    jmp x-- left_bits     side 0b00
+    in  pins, 1           side 0b01
+
+    set x, 30             side 0b10
+right_bits:
+    in  pins, 1           side 0b11
+    jmp x-- right_bits    side 0b10
+    in  pins, 1           side 0b11
